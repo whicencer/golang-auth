@@ -1,5 +1,5 @@
-<script lang="ts"></script>
+<script lang="ts">
+  import Routing from "./routes/Routing.svelte";
+</script>
 
-<main>
-  <h2>Hello world!</h2>
-</main>
+<Routing />

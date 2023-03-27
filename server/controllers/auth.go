@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 	"time"
 
@@ -34,6 +33,20 @@ func Register(c *fiber.Ctx) error {
 		})
 	}
 
+	if len(body.Password) < 8 {
+		return c.JSON(fiber.Map{
+			"message": "Password length should be 8 symbols or more",
+			"success": false,
+		})
+	}
+
+	if len(body.Nickname) < 2 {
+		return c.JSON(fiber.Map{
+			"message": "Username length should be 2 symbols or more",
+			"success": false,
+		})
+	}
+
 	// Define a hashed password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
 
@@ -49,18 +62,21 @@ func Register(c *fiber.Ctx) error {
 	if err := db.Create(&user).Error; err != nil {
 		if strings.Contains(err.Error(), "duplicated key not allowed") {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"message": "Nickname already in use",
+				"message": "Nickname already taken",
+				"success": false,
 			})
 		}
 
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create user",
+			"success": false,
 		})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "User created",
 		"user":    user,
+		"success": true,
 	})
 }
 
@@ -95,21 +111,55 @@ func Login(c *fiber.Ctx) error {
 		})
 	}
 
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Issuer:    strconv.Itoa(int(dbUser.ID)),
-		ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
-	})
+	token := jwt.New(jwt.SigningMethodHS256)
 
-	token, err := claims.SignedString([]byte(SecretKey))
+	claims := token.Claims.(jwt.MapClaims)
+	claims["nickname"] = dbUser.Nickname
+	claims["description"] = dbUser.Description
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
+	t, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Error occured",
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Success login", "data": t})
+}
+
+// GetMe method
+func GetMe(c *fiber.Ctx) error {
+	// Getting authorization header and check if it's not empty
+	authHeader := c.Get("Authorization")
+	if authHeader == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Authorization token is missing",
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"message": "Successfully logged in",
-		"token":   token,
+	tokenString := authHeader[len("Bearer "):]
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Устанавливаем ключ для проверки подлинности JWT-токена
+		return []byte(SecretKey), nil
 	})
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Invalid token",
+		})
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		nickname := claims["nickname"].(string)
+		description := claims["description"].(string)
+
+		return c.JSON(fiber.Map{
+			"nickname":    nickname,
+			"description": description,
+		})
+	} else {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Wrong token",
+		})
+	}
+
 }

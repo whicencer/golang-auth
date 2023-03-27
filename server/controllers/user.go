@@ -1,15 +1,32 @@
 package controllers
 
 import (
-	"github.com/gofiber/fiber/v2"
-)
+	"fmt"
 
-// GetUsers Get all users
-func GetUsers(c *fiber.Ctx) error {
-	return c.SendString("Get all users")
-}
+	"github.com/gofiber/fiber/v2"
+	"github.com/whicencer/golang-auth/database"
+	"github.com/whicencer/golang-auth/models"
+)
 
 // GetUser Get a single user
 func GetUser(c *fiber.Ctx) error {
-	return c.SendString("Get a single user")
+	db := database.DB.Db
+	username := c.Params("nickname")
+	var user models.User
+
+	result := db.Where("nickname = ?", username).First(&user)
+
+	if result.Error != nil {
+		errorMessage := fmt.Sprintf("user %s not found", username)
+		return c.JSON(fiber.Map{
+			"message":    errorMessage,
+			"userExists": false,
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message":    "User found",
+		"userExists": true,
+		"user":       user,
+	})
 }

@@ -6,6 +6,8 @@ import (
 )
 
 func SetupRoutes(app *fiber.App) {
-	app.Get("/users", controllers.GetUsers)          // Get all users
-	app.Get("/users/:nickname", controllers.GetUser) // Get a single user
+	app.Get("/users/:nickname", controllers.GetUser)
+	app.Get("/users", func(c *fiber.Ctx) error {
+		return c.Redirect("/users/:nickname")
+	})
 }
