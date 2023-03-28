@@ -1,5 +1,8 @@
 export interface IAuth {
   nickname: string,
-  description: string,
   password: string
+}
+
+export interface ISignup extends IAuth {
+  description?: string,
 }

@@ -1,17 +1,41 @@
-<script>
-  const getMe = async () => {
-    const response = await fetch('http://127.0.0.1:2000/auth/me', {
-      headers: new Headers({
-        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXNjcmlwdGlvbiI6IkhlbGxvLCBteSBuYW1lIGlzIERlbmllbCwgSSdtIGEgcHJvZ3JhbW1lciIsImV4cCI6MTY4MDE3NDI0Niwibmlja25hbWUiOiJ3aGljZW5jZXIifQ._oZkn5KkIq4yt3bcIY0hEQ9uu0mXsu09qTdZXagR5zM`
-      })
-    });
-    const data = await response.json();
+<script lang="ts">
+  import { push } from "svelte-spa-router";
+  import { toasts, FlatToast, ToastContainer } from "svelte-toasts";
+  import { onMount } from 'svelte';
 
-    console.log(data);
+  let isAuthorized = false;
+	onMount(async () => {
+    isAuthorized = localStorage.getItem('authToken').length !== 0;
+	});
+
+
+  const logout = () => {
+    localStorage.setItem('authToken', '');
+    push('/signin')
+    toasts.info('You have successfully logged out');
   }
 </script>
 
 <main>
   <h2>Home</h2>
-  <button on:click={getMe}>Get me</button>
+  <div>
+    {#if isAuthorized}
+      <p>You logged in</p>
+      <button on:click={logout}>Logout</button>
+    {:else}
+      <p>You're not logged in</p>  
+    {/if}
+  </div>
+  <ToastContainer let:data={data}>
+    <FlatToast {data} />
+  </ToastContainer>
 </main>
+
+<style>
+  main > div {
+    max-width: 320px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+</style>

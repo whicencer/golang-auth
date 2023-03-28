@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { push } from "svelte-spa-router";
   import { toasts, ToastContainer, FlatToast }  from "svelte-toasts";
   import { checkUserNameTaken } from "../lib/checkUsernameTaken";
@@ -62,42 +62,13 @@
 </main>
 
 <style>
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .form {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    width: 325px;
-  }
-  .form > input {
-    margin: 7px 0;
-  }
-
-  span {
-    color: red;
-    text-align: left;
-    font-size: 13px;
-    display: none;
-  }
-
-  input {
-    padding: 10px;
-    outline: none;
-    border: 2px solid #d4d4d4;
-  }
-  input:focus {
-    border-color: #646cff;
-  }
-  input:focus + .error {
-    display: block;
-  }
-
   button {
     margin-top: 10px;
   }
+  main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 </style>

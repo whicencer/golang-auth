@@ -1,6 +1,6 @@
-import type { IAuth } from "../../typings/IAuth"
+import type { ISignup } from "../../typings/IAuth"
 
-export const signup = async (data: IAuth) => {
+export const signup = async (data: ISignup) => {
   const response = await fetch('http://127.0.0.1:2000/auth/register', {
     method: 'POST',
     headers: {
