@@ -3,6 +3,7 @@
   import { toasts, ToastContainer, FlatToast }  from "svelte-toasts";
   import { checkUserNameTaken } from "../lib/checkUsernameTaken";
   import { signup } from "../services/auth/signup";
+  import { isAuthorized } from "../store";
   
   let username = "";
   let description = "No information given.";
@@ -24,6 +25,11 @@
       }
     });
   }
+
+  isAuthorized.subscribe(value => {
+    if (value.isAuthorized)
+      push('/');
+  })
 </script>
 
 <main>

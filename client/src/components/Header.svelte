@@ -1,51 +1,22 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
-  import { getMe } from "../services/auth/getMe";
-
-  let intervalId;
+  import { isAuthorized } from "../store";
 
   let me = null;
-  let token = localStorage.getItem('authToken');
-  let isAuthorized = !!token.length;
-
-  const handleStorageChange = () => {
-    token = localStorage.getItem('authToken');
-    if (!token.length) {
-      isAuthorized = false;
-    } else {
-      isAuthorized = true;
-    }
-  }
-
-  if (isAuthorized) {
-    getMe(token)
-      .then(data => {
-        if (data.success) {
-          me = { username: data.nickname, description: data.description };
-        } else {
-          console.log('Not authenticated');
-        }
-      })
-  }
-
-  onMount(() => {
-    intervalId = setInterval(() => {
-      handleStorageChange();
-    }, 500);
-  });
-
-  onDestroy(() => {
-    clearInterval(intervalId);
-  });
+  let isAuthorizedValue = false;
+  
+  isAuthorized.subscribe(value => {
+		isAuthorizedValue = value.isAuthorized;
+    me = value.me;
+	});
 </script>
 
 <header>
   <h2>
     <a href="#/">Golang auth</a>
   </h2>
-  {#if isAuthorized && me !== null}
+  {#if isAuthorizedValue && me !== null}
     <h3>{me.username}</h3>
-  {:else if !isAuthorized}
+  {:else if !isAuthorizedValue}
     <nav>
       <a href="#/signin">Sign In</a>
       <a href="#/signup">Sign Up</a>

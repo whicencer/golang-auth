@@ -137,9 +137,9 @@ func Login(c *fiber.Ctx) error {
 func GetMe(c *fiber.Ctx) error {
 	// Getting authorization header and check if it's not empty
 	authHeader := c.Get("Authorization")
-	if authHeader == "" {
+	if len(authHeader) <= len("Bearer ") {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Authorization token is missing",
+			"message": "Authorization token is missing or invalid",
 			"success": false,
 		})
 	}

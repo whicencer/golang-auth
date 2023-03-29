@@ -2,6 +2,7 @@
   import { signin } from "../services/auth/signin";
   import { toasts, ToastContainer, FlatToast }  from "svelte-toasts";
   import { push } from "svelte-spa-router";
+  import { isAuthorized } from "../store";
 
   let username = '';
   let password = '';
@@ -20,6 +21,11 @@
       }
     })
   }
+
+  isAuthorized.subscribe(value => {
+    if (value.isAuthorized)
+      push('/');
+  })
 </script>
 
 <main>
