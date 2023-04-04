@@ -9,11 +9,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-type DBInstance struct {
-	Db *gorm.DB
-}
-
-var DB DBInstance
+var DB *gorm.DB
 
 func Connect() {
 	dbURL := "postgres://postgres:denielpuffmeister@127.0.0.1:5432/postgres"
@@ -27,9 +23,7 @@ func Connect() {
 	}
 	log.Println("Connected")
 
-	err = db.AutoMigrate(&models.Book{}, &models.User{})
+	err = db.AutoMigrate(&models.User{})
 
-	DB = DBInstance{
-		Db: db,
-	}
+	DB = db
 }

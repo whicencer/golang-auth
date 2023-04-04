@@ -17,12 +17,13 @@
       password,
       nickname: username
     }).then((response) => {
-      if (!response.success) {
-        toasts.error(response.message);
-      } else {
-        toasts.success(response.message);
-        push('/#/signin');
-      }
+      if (!response.ok)
+        throw new Error(response.message);
+      toasts.success(response.message);
+      push('/signin');
+    })
+    .catch(err => {
+      toasts.error(err.message);
     });
   }
 

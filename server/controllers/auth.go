@@ -17,7 +17,7 @@ const SecretKey = "secret"
 
 func Register(c *fiber.Ctx) error {
 	// init a "db" and "user" variable
-	db := database.DB.Db
+	db := database.DB
 
 	var body struct {
 		Nickname    string
@@ -30,22 +30,22 @@ func Register(c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid request body",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
 	// Validate body parameters
 	if len(body.Password) < 8 {
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Password length should be 8 symbols or more",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
 	if len(body.Nickname) < 2 {
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Username length should be 2 symbols or more",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
@@ -56,7 +56,7 @@ func Register(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to hash password",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
@@ -66,25 +66,23 @@ func Register(c *fiber.Ctx) error {
 		if strings.Contains(err.Error(), "duplicated key not allowed") {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 				"message": "Nickname already taken",
-				"success": false,
+				"ok":      false,
 			})
 		}
 
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to create user",
-			"success": false,
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to create user"})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "User created",
 		"user":    user,
-		"success": true,
+		"ok":      true,
 	})
 }
 
 func Login(c *fiber.Ctx) error {
-	db := database.DB.Db
+	db := database.DB
+
 	var body struct {
 		Nickname string `json:"nickname"`
 		Password string `json:"password"`
@@ -93,7 +91,7 @@ func Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid request body",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
@@ -102,19 +100,19 @@ func Login(c *fiber.Ctx) error {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "Invalid login or password!",
-				"success": false,
+				"ok":      false,
 			})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to retrieve user",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(body.Password)); err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Invalid login or password!",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
@@ -130,7 +128,11 @@ func Login(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.JSON(fiber.Map{"success": true, "message": "You have successfully logged in", "token": t})
+	return c.JSON(fiber.Map{
+		"message": "You have successfully logged in",
+		"token":   t,
+		"ok":      true,
+	})
 }
 
 // GetMe method
@@ -140,7 +142,7 @@ func GetMe(c *fiber.Ctx) error {
 	if len(authHeader) <= len("Bearer ") {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Authorization token is missing or invalid",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
@@ -153,7 +155,7 @@ func GetMe(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Invalid token",
-			"success": false,
+			"ok":      false,
 		})
 	}
 
@@ -164,12 +166,12 @@ func GetMe(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"nickname":    nickname,
 			"description": description,
-			"success":     true,
+			"ok":          true,
 		})
 	} else {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Wrong token",
-			"success": false,
+			"ok":      false,
 		})
 	}
 

@@ -10,7 +10,7 @@ import (
 
 // GetUser Get a single user
 func GetUser(c *fiber.Ctx) error {
-	db := database.DB.Db
+	db := database.DB
 	username := c.Params("nickname")
 	var user models.User
 

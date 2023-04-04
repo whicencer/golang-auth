@@ -7,19 +7,22 @@
   let username = '';
   let password = '';
 
-  const signInHandler = () => {
-    signin({
+  const signInHandler = async () => {
+    const response = await signin({
       nickname: username,
       password
-    }).then((data) => {
-      if (data.success) {
-        toasts.success(data.message);
-        localStorage.setItem('authToken', data.token);
-        push('/');
-      } else {
-        toasts.error(data.message);
+    });
+
+    try {
+      if (!response.ok) {
+        throw new Error(response.message);
       }
-    })
+      toasts.success(response.message);
+      localStorage.setItem('authToken', response.token);
+      push('/');
+    } catch (error) {
+      toasts.error(error.message);
+    }
   }
 
   isAuthorized.subscribe(value => {

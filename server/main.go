@@ -8,14 +8,18 @@ import (
 )
 
 func main() {
+	// Create a new app
 	app := fiber.New()
 
+	// CORS middleware
 	app.Use(cors.New())
 
 	// Connecting Database
 	database.Connect()
 
-	routes.SetupRoutes(app)
+	// Setup routes
+	routes.SetupAllRoutes(app)
 
+	// Listen localhost:2000
 	app.Listen("localhost:2000")
 }

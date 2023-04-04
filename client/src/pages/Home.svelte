@@ -5,20 +5,24 @@
   import { getMe } from "../services/auth/getMe";
   import { isAuthorized } from "../store";
 
-  const token = localStorage.getItem('authToken');
-  if (token.length !== 0) {
-    getMe(token)
-      .then(data => {
-        if (data.success) {
-          isAuthorized.set({
-            isAuthorized: true,
-            me: { description: data.description, username: data.nickname }
-          });
-        } else {
-          console.log('Not authenticated');
+  onMount(async () => {
+    const token = localStorage.getItem('authToken');
+    if (token.length !== 0) {
+      const response = await getMe(token);
+
+      try {
+        if (!response.ok) {
+          throw new Error(response.message);
         }
-      })
-  }
+        isAuthorized.set({
+          isAuthorized: true,
+          me: { description: response.description, username: response.nickname }
+        });
+      } catch (error) {
+        toasts.error(error.message);
+      }
+    }
+  });
 
   let isAuthorizedValue = false;
   
