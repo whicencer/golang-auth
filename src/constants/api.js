@@ -1,0 +1,1 @@
+export const baseURL = "https://golang-auth-backend-production.up.railway.app";

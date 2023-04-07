@@ -1,7 +1,8 @@
+import { baseURL } from '../../constants/api';
 import type { IAuth } from './../../typings/IAuth';
 
 export const signin = async (data: IAuth) => {
-  const response = await fetch(`http://127.0.0.1:2000/auth/login`, {
+  const response = await fetch(`${baseURL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

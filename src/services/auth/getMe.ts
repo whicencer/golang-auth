@@ -1,5 +1,7 @@
+import { baseURL } from "../../constants/api"
+
 export const getMe = async (token: string) => {
-  const response = await fetch('http://127.0.0.1:2000/auth/me', {
+  const response = await fetch(`${baseURL}/auth/me`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
